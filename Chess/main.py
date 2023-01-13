@@ -3,7 +3,11 @@ from const import *
 import ChessSettings
 import sys
 import AIChess
+from Button import Button
+from stats import Stats
 
+stat = Stats()
+command = 0
 
 #load the image
 def loadImg():
@@ -50,17 +54,21 @@ def Text(scrn, txt):
 
             
 def menu(scrn):
-    menuBtn = p.draw.rect(scrn, 'light gray', [190, 235, 130, 40],0,5)
-    p.draw.rect(scrn, 'dark gray', [190, 235, 130, 40],5,5)
-    f = p.font.SysFont("Montseratt",32,True,False)
-    text  = f.render('PvP', True, 'black')
-    # txtLoc = text.get_rect(center=(w/2, h/2))
-    scrn.blit(text, (225, 245))
-    if menuBtn.collidepoint(p.mouse.get_pos()) and p.mouse.get_pressed()[0]:
-        menu = True
-    else:
-        menu = False
-    return menu
+    Btn = Button('P V P',(200, 200))
+    Btn2 = Button('P V AI',(200, 250))
+    Btn.drwBtn(scrn)
+    Btn2.drwBtn(scrn)
+    if Btn.Clicked():
+        command = 1
+        notAI = True
+        stat.game_active = True
+    if Btn2.Clicked():
+        command = 2
+        notAI = False
+        stat.game_active = True
+    return Btn.Clicked()
+
+
 def drawGame(scrn,gs, valMov, sqSlctd):
     BoardPieces(scrn, gs, valMov, sqSlctd)
 
@@ -72,6 +80,7 @@ def main():
     p.init()
     scrn = p.display.set_mode((w, h))
     p.display.set_caption("Chess")
+    
     gs = ChessSettings.gamState()
     VMoves = gs.getValMov()
     hasMoved = False
@@ -82,11 +91,20 @@ def main():
     loadImg()
     isRunning = True
     while isRunning:
-        PlayerTurn = (gs.WhiteMove and Player) or (not gs.WhiteMove and AI)
-        if Menu:
+        if not stat.game_active:
             menu(scrn)
+            # if command == 1:
+            #     AI = True
+            # elif command == 2:
+            #     AI = False
+
+        PlayerTurn = (gs.WhiteMove and Player) or (not gs.WhiteMove and notAI)
+
+        
         for event in p.event.get():
-            if event.type == p.MOUSEBUTTONDOWN:
+            if not stat.game_active:
+                menu(scrn)
+            elif event.type == p.MOUSEBUTTONDOWN:
                if not gameOver: 
                 loc = p.mouse.get_pos()
                 c = loc[0]//sqrSize
@@ -119,7 +137,7 @@ def main():
             if event.type == p.QUIT:
                 isRunning = False
                 sys.exit()
-
+        
         if not gameOver and not PlayerTurn:
             compMove = AIChess.BestNegaMaxMove(gs, VMoves)
             gs.makesMove(compMove)
