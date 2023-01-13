@@ -8,7 +8,7 @@ from stats import Stats
 
 stat = Stats()
 command = 0
-
+# notAI = False
 #load the image
 def loadImg():
     pieces = ['WP','WN','WR','WB','WK','WQ','BP','BN','BR','BB','BK','BQ']
@@ -60,11 +60,11 @@ def menu(scrn):
     Btn2.drwBtn(scrn)
     if Btn.Clicked():
         command = 1
-        notAI = True
+        stat.notAI = True
         stat.game_active = True
     if Btn2.Clicked():
         command = 2
-        notAI = False
+        stat.notAI = False
         stat.game_active = True
     return Btn.Clicked()
 
@@ -93,18 +93,12 @@ def main():
     while isRunning:
         if not stat.game_active:
             menu(scrn)
-            # if command == 1:
-            #     AI = True
-            # elif command == 2:
-            #     AI = False
+        PlayerTurn = (gs.WhiteMove and Player) or (not gs.WhiteMove and stat.notAI)
 
-        PlayerTurn = (gs.WhiteMove and Player) or (not gs.WhiteMove and notAI)
-
-        
         for event in p.event.get():
             if not stat.game_active:
                 menu(scrn)
-            elif event.type == p.MOUSEBUTTONDOWN:
+            if event.type == p.MOUSEBUTTONDOWN:
                if not gameOver: 
                 loc = p.mouse.get_pos()
                 c = loc[0]//sqrSize
