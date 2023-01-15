@@ -1,4 +1,3 @@
-from const import *
 class gamState():
     def __init__(self):
         self.board = [
@@ -24,6 +23,8 @@ class gamState():
         self.CastleLog = [Castle(self.CurrentCastle.WK, self.CurrentCastle.BK,self.CurrentCastle.WQ,self.CurrentCastle.BQ)]
         self.Checkm8 = False
         self.Stalem8 = False
+    
+    #to make the move
     def makesMove(self, move):
         self.board[move.StrtR][move.StrtC] = '..'
         self.board[move.EndR][move.EndC] = move.Moved
@@ -52,7 +53,7 @@ class gamState():
                 self.WKLoc = (move.StrtR, move.StrtC)
             elif move.Moved == "BK":
                 self.BKLoc = (move.StrtR, move.StrtC)
-        
+    #all the posible moves  
     def PosMov(self):
         moves = []
         for r in range(len(self.board)):
@@ -62,6 +63,8 @@ class gamState():
                     piece = self.board[r][c][1]
                     self.movesFunc[piece](r,c,moves)
         return moves
+    
+    #all the valid moves
     def getValMov(self):
         moves = []
         tmpCastle = Castle(self.CurrentCastle.WK, self.CurrentCastle.BK,self.CurrentCastle.WQ,self.CurrentCastle.BQ)
@@ -108,6 +111,7 @@ class gamState():
         self.CurrentCastle = tmpCastle
         return moves
 
+    #checking if the king square is safe
     def scanKingSqr(self):
         pin = []
         check = [] 
@@ -167,19 +171,11 @@ class gamState():
                     check.append((EndR, EndCol, i[0], i[1]))
         
         return isCheck, pin, check
-
-
     def ifInCheck(self):
         if self.WhiteMove:
             return self.KingGetAttack(self.WKLoc[0], self.WKLoc[1])
         else:
             return self.KingGetAttack(self.BKLoc[0], self.BKLoc[1])
-
-
-
-
-
-
     def KingGetAttack(self,r,c):
         self.WhiteMove = not self.WhiteMove
         opp = self.PosMov()
@@ -191,7 +187,7 @@ class gamState():
 
 
 
-        
+    #setting the pawn moves  
     def PawnM(self,r,c,moves):
         isPinned = False
         pinDir = ()
@@ -231,7 +227,7 @@ class gamState():
                     if not isPinned or pinDir == (1,1):
                         moves.append(Moves((r,c),(r+1,c+1),self.board))           
 
-
+    #setting the rook moves  
     def RookM(self,r,c,moves):
         isPinned = False
         pinDir = ()
@@ -261,7 +257,7 @@ class gamState():
                             break
                 else:
                     break
-
+    #setting the knight moves  
     def KnightM(self,r,c,moves):
         isPinned = False
         for i in range(len(self.pin)-1,-1,-1):
@@ -284,7 +280,7 @@ class gamState():
                         moves.append(Moves((r,c),(endRow,endCol),self.board))
 
 
-            
+    #setting the bishop moves  
     def  BishopM(self,r,c,moves):
         isPinned = False
         pinDir = ()
@@ -314,10 +310,12 @@ class gamState():
                 else:
                     break
 
+    #setting the queen moves  
     def  QueenM(self,r,c,moves):
         self. RookM(r,c,moves)
         self. BishopM(r,c,moves)
 
+    #setting the king moves  
     def  KingM(self,r,c,moves):
         dir = ((-1,0), (0,-1), (1,0), (0,1),(-1,-1), (-1,1), (1,-1), (1,1))
         ally = 'W' if self.WhiteMove else "B"
@@ -342,7 +340,7 @@ class gamState():
                             self.BKLoc = (r,c)
 
 
-
+    #castling
     def CastleMove(self, row, col, moves):
         if self.KingGetAttack(row, col):
             return
@@ -376,10 +374,6 @@ class gamState():
                     self.CurrentCastle.WQ = False
 
 class Moves():
-    rToRow = {"1":7,"2":6,"3":5,"4":4,"5":3,"6":2,"7":1,"8":0}
-    RowTor = {v: i for i,v in rToRow.items()} 
-    fToCols = {"a":0,"b":1,"c":2,"d":3,"e":4,"f":5,"g":6,"h":7}
-    ColsTof = {v: i for i,v in fToCols.items()}
     def __init__(self, StrtSq, EndSq, board, isCastle = False):
         self.StrtR = StrtSq[0]
         self.StrtC = StrtSq[1]
@@ -387,16 +381,14 @@ class Moves():
         self.EndC = EndSq[1]
         self.Moved = board[self.StrtR][self.StrtC]
         self.Capt = board[self.EndR][self.EndC]
-        self.ID = self.StrtR*1000+self.StrtC*100+self.EndR*10+self.EndC
+        self.ID = self.StrtR*10000+self.StrtC*1000+self.EndR*100+self.EndC
         self.isCastle = isCastle
+    #overriding
     def __eq__(self, other):
         if isinstance(other, Moves):
             return self.ID == other.ID
         return False
-    def  ChessNotation(self):
-        return self. RankFiles(self.StrtR, self.StrtC)+self. RankFiles(self.EndR, self.EndC)
-    def  RankFiles(self,r,c):
-        return self.ColsTof[c] + self.RowTor[r]
+
 
 
 

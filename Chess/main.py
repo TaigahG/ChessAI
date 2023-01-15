@@ -1,5 +1,4 @@
 import pygame as p
-from const import *
 import ChessSettings
 import sys
 import AIChess
@@ -8,14 +7,20 @@ from stats import Stats
 
 stat = Stats()
 command = 0
-# notAI = False
+w = h = 512
+d = 8
+sqrSize = h//d
+IMAGES = {}
+
+
+
 #load the image
 def loadImg():
     pieces = ['WP','WN','WR','WB','WK','WQ','BP','BN','BR','BB','BK','BQ']
     for i in pieces:
         IMAGES[i] = p.transform.scale(p.image.load("images/"+ i + ".png"), (sqrSize, sqrSize))
 
-
+#draw the board and pieces
 def BoardPieces(scrn, gs, valMov, sqSlctd):
     drwBP(scrn,gs)
     MoveHighlight(scrn, gs, valMov, sqSlctd)
@@ -30,6 +35,7 @@ def drwBP(scrn, gs):
             if piece != "..":
                 scrn.blit(IMAGES[piece],p.Rect(c*sqrSize,r*sqrSize,sqrSize,sqrSize))
 
+#highlighting the valid moves
 def MoveHighlight(scrn, gs, valMov, sqSlctd):
     if sqSlctd != ():
         r, c = sqSlctd
@@ -42,7 +48,8 @@ def MoveHighlight(scrn, gs, valMov, sqSlctd):
             for i in valMov:
                 if i.StrtR == r and i.StrtC == c:
                     scrn.blit(sqr, (sqrSize*i.EndC, sqrSize*i.EndR))
-                
+
+#draw the endgame text
 def Text(scrn, txt):
     f = p.font.SysFont("Montseratt",32,True,False)
     text = f.render(txt, False, p.Color('black'))
@@ -52,7 +59,7 @@ def Text(scrn, txt):
     text = f.render(txt, False, p.Color('white'))
     scrn.blit(text, txtLoc.move(3,3))
 
-            
+#draw the button           
 def menu(scrn):
     Btn = Button('P V P',(200, 200))
     Btn2 = Button('P V AI',(200, 250))
@@ -69,8 +76,7 @@ def menu(scrn):
     return Btn.Clicked()
 
 
-def drawGame(scrn,gs, valMov, sqSlctd):
-    BoardPieces(scrn, gs, valMov, sqSlctd)
+
 
 
 
@@ -93,12 +99,13 @@ def main():
     while isRunning:
         if not stat.game_active:
             menu(scrn)
-        PlayerTurn = (gs.WhiteMove and Player) or (not gs.WhiteMove and stat.notAI)
+        PlayerTurn = (gs.WhiteMove and stat.Player) or (not gs.WhiteMove and stat.notAI)
 
         for event in p.event.get():
             if not stat.game_active:
                 menu(scrn)
             if event.type == p.MOUSEBUTTONDOWN:
+                #to select the pieces
                if not gameOver: 
                 loc = p.mouse.get_pos()
                 c = loc[0]//sqrSize
@@ -111,7 +118,6 @@ def main():
                     usrclcks.append(sqSlctd)
                 if len(usrclcks) == 2:
                     move = ChessSettings.Moves(usrclcks[0], usrclcks[1], gs.board)
-                    print(move.ChessNotation())
                     for i in range(len(VMoves)):
                         if move  == VMoves[i]:
                             gs.makesMove(VMoves[i])
@@ -132,12 +138,13 @@ def main():
                 isRunning = False
                 sys.exit()
         
+        #AI turn
         if not gameOver and not PlayerTurn:
             compMove = AIChess.BestNegaMaxMove(gs, VMoves)
             gs.makesMove(compMove)
             hasMoved = True
 
-
+        
         if hasMoved:
             VMoves = gs.getValMov()
             hasMoved = False

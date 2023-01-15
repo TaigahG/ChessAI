@@ -3,3 +3,4 @@ class Stats():
         self.game_active = False
         self.game_mode = 0 
         self.notAI = True
+        self.Player = True
